@@ -14,9 +14,6 @@ const int FPS_PIN = 38; //Old PCB pin: 47;
 const int IAT_PIN = 39; //Old PCB pin = 0;
 const int IAP_PIN = 4; //new will be same sensor
 
-// Pin with LED, which flashes whenever data is written to card, and does a 
-// slow blink when recording has stopped.
-const int LED_PIN = 13;
 
 // 16 KiB buffer.
 const size_t BUF_DIM = 16384;

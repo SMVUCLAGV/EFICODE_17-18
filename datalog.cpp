@@ -6,7 +6,7 @@
 
 
 
-datalog::datalog(bool wireless){
+datalog::datalog(bool wireless, DataArray* MAP, DataArray* CRANK, DataArray* TPS, DataArray* FPS, DataArray* ECT, DataArray* IAT, DataArray* IAP){
       curBlock = 0;
       emptyTop = 0;
       minTop = 0;
@@ -18,6 +18,13 @@ datalog::datalog(bool wireless){
       isSampling = false;
       justSampled = false;
       newCycle = true;
+      Manifold_Air_Array = MAP;
+      Crank_Pos_Array = CRANK;
+      Throttle_Pos_Array = TPS;
+      Fuel_Pressure_Array = FPS;
+      Engine_Temp_Array = ECT;
+      Intake_Air_Temp_Array = IAT;
+      Intake_Air_Pressure_Array = IAP;
       setup();
 }
 
@@ -159,7 +166,7 @@ void datalog::putCurrentBlock() {
 void datalog::error(String msg) {
   Serial.print("ERROR: ");
   Serial.println(msg);
-  blinkForever();
+  //How to deal with when there is an error
 }
 //-----------------------------------------------------------------------------
 void datalog::acquireData(struct data_t* data){
@@ -167,16 +174,22 @@ void datalog::acquireData(struct data_t* data){
 
  //Grab these values as fast as possible
   data->adc[0] = analogRead(MAP_PIN);
+  Manifold_Air_Array->push((double)(data->adc[0]));
   data->adc[1] = analogRead(CRANK_PIN);
-
+  Crank_Pos_Array->push((double)(data->adc[1]));
  //grab all these values only at the start of a new cycle since they do not change quickly
  //and we only need these values at the beginning of each cycle
   if(newCycle){
   data->adc[2] = analogRead(TPS_PIN);
+  Throttle_Pos_Array->push((double)(data->adc[2]));
   data->adc[3] = analogRead(FPS_PIN);
+  Fuel_Pressure_Array->push((double)(data->adc[3]));
   data->adc[4] = analogRead(ECT_PIN);
+  Engine_Temp_Array->push((double)(data->adc[4]));
   data->adc[5] = analogRead(IAT_PIN);
+  Intake_Air_Temp_Array->push((double)(data->adc[5]));
   data->adc[6] = analogRead(IAP_PIN);
+  Intake_Air_Pressure_Array->push((double)(data->adc[6]));
   newCycle = false;
   }
   
@@ -195,16 +208,6 @@ void datalog::acquireData(struct data_t* data){
   }
 }
 //-----------------------------------------------------------------------------
-
-//change blink forever function, do not want this functionality
-void datalog::blinkForever() {
-  while (1) {
-    digitalWrite(LED_PIN, HIGH);
-    delay(1000);
-    digitalWrite(LED_PIN, LOW);
-    delay(1000);
-  }
-}
 
 void datalog::newcycle(){
   newCycle = true;

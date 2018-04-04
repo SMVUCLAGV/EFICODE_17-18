@@ -5,13 +5,22 @@
 #include "SdFat.h"
 #include "Arduino.h"
 #include "constants.h"
+#include "DataArray.h"
 
 class datalog{
 	public:
 
    
  
-    datalog(bool wireless);
+    datalog(bool wireless, 
+      DataArray* MAP, 
+      DataArray* CRANK, 
+      DataArray* TPS, 
+      DataArray* FPS, 
+      DataArray* ECT,
+      DataArray* IAT,
+      DataArray* IAP
+      );
 		void yield();
 		void setup();
 		void loopfunction();
@@ -51,6 +60,14 @@ class datalog{
 		bool isSampling;
 		bool justSampled;
 		bool newCycle;
+
+    DataArray* Manifold_Air_Array;
+    DataArray* Crank_Pos_Array;
+    DataArray* Throttle_Pos_Array;
+    DataArray* Fuel_Pressure_Array;
+    DataArray* Engine_Temp_Array;
+    DataArray* Intake_Air_Temp_Array;
+    DataArray* Intake_Air_Pressure_Array;
 
 };
 
