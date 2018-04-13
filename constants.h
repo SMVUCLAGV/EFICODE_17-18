@@ -7,15 +7,14 @@
 //Sensor Pin Definitions
 #define ECT_PIN A21 //Old PCB pins: 1; 
 #define SENSOR_PIN A0
-const int MAP_PIN = 34; //Old PCB pin: 5;
-const int CRANK_PIN = 4;//new 
-const int TPS_PIN = 33; //Old PCB pin: 2;
-const int FPS_PIN = 38; //Old PCB pin: 47;
-const int IAT_PIN = 39; //Old PCB pin = 0;
-const int IAP_PIN = 4; //new will be same sensor
-const int IVO_PIN = -1;
-const int IVC_PIN = -1;
-
+#define IAP_PIN A22
+const int MAP_PIN = 34; 
+const int TPS_PIN = 33; 
+const int FPS_PIN = 38; 
+const int IAT_PIN = 39; 
+const int IVO_PIN = 20;
+const int IVC_PIN = 21; //Pin 22 has the same behavior
+const int MAP_IVO_PIN = 23;
 
 // 16 KiB buffer.
 const size_t BUF_DIM = 16384;
