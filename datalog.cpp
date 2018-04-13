@@ -26,6 +26,8 @@ datalog::datalog(bool wireless, DataArray* Timestamps, DataArray* MAP, DataArray
       Engine_Temp_Array = ECT;
       Intake_Air_Temp_Array = IAT;
       Intake_Air_Pressure_Array = IAP;
+      prevMAP = 0;
+      prevTime = 0;
       setup();
 }
 
@@ -172,10 +174,13 @@ void datalog::error(String msg) {
 //-----------------------------------------------------------------------------
 void datalog::acquireData(struct data_t* data){
   data->time = micros();
-
+  
  //Grab these values as fast as possible
   Timestamp_Array->push(data->time);
   data->adc[0] = analogRead(MAP_PIN);
+  // Add interrupt to make A23 go high
+  double dMAP_dt = (data->adc[0] - prevMAP) / (data->time - prevTime);
+  prevMA
   Manifold_Air_Array->push((double)(data->adc[0]));
   /*data->adc[1] = analogRead(CRANK_PIN);
   Crank_Pos_Array->push((double)(data->adc[1]));
