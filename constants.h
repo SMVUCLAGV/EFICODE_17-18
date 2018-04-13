@@ -13,6 +13,8 @@ const int TPS_PIN = 33; //Old PCB pin: 2;
 const int FPS_PIN = 38; //Old PCB pin: 47;
 const int IAT_PIN = 39; //Old PCB pin = 0;
 const int IAP_PIN = 4; //new will be same sensor
+const int IVO_PIN = -1;
+const int IVC_PIN = -1;
 
 
 // 16 KiB buffer.

@@ -6,15 +6,16 @@
 #include "TimerThree.h"
 
 AirMassEstimator airmass;
-DataArray MAP, CRANK, TPS, FPS, ECT, IAT, IAP;
+FuelMassEstimator fuelmass;
+DataArray Timestamps, MAP, CRANK, TPS, FPS, ECT, IAT, IAP, Reynolds;
 datalog log;
 
-
-
 void setup() {
-  // put your setup code here, to run once:
 	log = datalog(false, &MAP, &CRANK, &TPS, &FPS, &ECT, &IAT, &IAP);
 	log.setup();
+
+	//The NULL and 1 parameters here still need to be filled
+	airmass = AirMassEstimator(NULL, NULL, 1, 1, 1, 1, 1, 1, Timestamps, &MAP, &CRANK, &Reynolds, &TPS, &IAP, &IAT);
 
 	// Attach the interrupt for INJ pulse modulation.
 	// For some reason, the internal interrupt flags can end up defaulting
@@ -26,28 +27,24 @@ void setup() {
 	Timer3.detachInterrupt();
 	Timer3.attachInterrupt(handle_pulseTimerTimeout);
 
-	//The NULL and 1 parameters here still need to be filled
-	airmass = AirMassEstimator(NULL, NULL, 1, 1, 1, 1, 1, 1, NULL, &MAP, &CRANK, null, &TPS, &IAP, &IAT);
-
 	// For some reason, the internal interrupt flags can end up defaulting
 	// to a triggered state before they are attached. This causes them
 	// to trigger once right when they are attached. Our current workaround
 	// is to attach the interrupt to a dummy function first that triggers
 	// if the interrupt is already set. Then, it is safe to attach the normal interrupt.
-	
-	//IVO and IVC pins need to be defined
-	attachInterrupt(digitalPinToInterrupt(IVO_Pin), dummy, RISING);
-	detachInterrupt(digitalPinToInterrupt(IVO_Pin));
-	attachInterrupt(digitalPinToInterrupt(IVO_Pin), handle_IVO, RISING);
 
-	attachInterrupt(digitalPinToInterrupt(IVC_Pin), dummy, RISING);
-	detachInterrupt(digitalPinToInterrupt(IVC_Pin));
-	attachInterrupt(digitalPinToInterrupt(IVC_Pin), handle_IVC, RISING);
+	//IVO and IVC pins need to be defined
+	attachInterrupt(digitalPinToInterrupt(IVO_PIN), dummy, RISING);
+	detachInterrupt(digitalPinToInterrupt(IVO_PIN));
+	attachInterrupt(digitalPinToInterrupt(IVO_PIN), handle_IVO, RISING);
+
+	attachInterrupt(digitalPinToInterrupt(IVC_PIN), dummy, RISING);
+	detachInterrupt(digitalPinToInterrupt(IVC_PIN));
+	attachInterrupt(digitalPinToInterrupt(IVC_PIN), handle_IVC, RISING)
 
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
 	log.loopfunction();
 }
 
@@ -58,21 +55,28 @@ void handle_pulseTimerTimeout()
 	Timer3.stop();
 }
 
-//Write handler for Intake Valve Open
+//Mark new injection cycle when IVO
+//TODO: RPM Calculation for logging
 void handle_IVO()
 {
-
+	digitalWrite(INJ_Pin, LOW); //Cut off injection when IVO
+	log.newcycle();
 }
 
-//Write handler for Intake Valve Closed
+//On IVC, calculate how much fuel needs to be injected and tell the injector to inject for that period of time
 void handle_IVC()
 {
-	airmass = airmass.estimateAirMass();
-	inject(airmass)
+	double airmass = airmass.estimateAirMass();
+	double fuelmass = fuelmass.estimateFuelMass(14.7, airmass);
+	const double injectorFuelRate = 2.13333; //grams per second
+	double injectionTime = airmass / (injectorFuelRate * 1000000); //in microseconds
+	inject(injectionTime);
 }
 
-//Function that calculates injection time and injects fuel
-void inject(double airmass)
+//Start fuel injection for specified time in microseconds
+void inject(double injectionTime)
 {
-
+	Timer3.setPeriod(injectionTime);
+	digitalWrite(INJ_Pin, HIGH);
+	Timer3.start();
 }

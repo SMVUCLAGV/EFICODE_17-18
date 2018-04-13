@@ -1,5 +1,5 @@
 
-#include "DataLog.h"
+#include "dataLog.h"
 #include "Arduino.h"
 #include "SdFat.h"
 #include "constants.h"
@@ -173,6 +173,7 @@ void datalog::acquireData(struct data_t* data){
   data->time = micros();
 
  //Grab these values as fast as possible
+  Timestamps->push(data->time);
   data->adc[0] = analogRead(MAP_PIN);
   Manifold_Air_Array->push((double)(data->adc[0]));
   data->adc[1] = analogRead(CRANK_PIN);

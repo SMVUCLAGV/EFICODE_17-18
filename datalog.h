@@ -13,6 +13,7 @@ class datalog{
    
  
     datalog(bool wireless, 
+      DataArray* Timestamps,
       DataArray* MAP, 
       DataArray* CRANK, 
       DataArray* TPS, 
