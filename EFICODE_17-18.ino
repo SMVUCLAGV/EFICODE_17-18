@@ -10,7 +10,10 @@ FuelMassEstimator fuelmass;
 DataArray Timestamps, MAP, CRANK, TPS, FPS, ECT, IAT, IAP, Reynolds;
 datalog log;
 
+bool firstCycle = true;
+
 void setup() {
+
 	log = datalog(false, &MAP, &CRANK, &TPS, &FPS, &ECT, &IAT, &IAP);
 	log.setup();
 
@@ -45,6 +48,12 @@ void setup() {
 }
 
 void loop() {
+	if (firstCycle)
+	{
+		digitalWrite(MAP_IVO_PIN, HIGH);
+		digitalWrite(MAP_IVO_PIN, LOW);
+		firstCycle = false;
+	}
 	log.loopfunction();
 }
 
