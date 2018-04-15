@@ -88,7 +88,6 @@ void datalog::loopfunction() {
 		if (fileIsClosing){
 			file.close();
 			Serial.println("File complete.");
-			blinkForever();
 		} else {
 			yield(); // acquire data etc.
 		}
