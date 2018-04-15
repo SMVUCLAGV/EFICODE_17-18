@@ -63,6 +63,7 @@ class datalog{
 		bool newCycle;
     double prevMAP;
     uint32_t prevTime;
+    bool MAP_dip;
 
     DataArray* Timestamp_Array;
     DataArray* Manifold_Air_Array;

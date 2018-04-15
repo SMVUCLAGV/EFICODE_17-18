@@ -28,6 +28,7 @@ datalog::datalog(bool wireless, DataArray* Timestamps, DataArray* MAP, DataArray
       Intake_Air_Pressure_Array = IAP;
       prevMAP = 0;
       prevTime = 0;
+      MAP_dip = true;
       setup();
 }
 
@@ -180,13 +181,18 @@ void datalog::acquireData(struct data_t* data){
   data->adc[0] = analogRead(MAP_PIN);
   // Add interrupt to make A23 go high
   double dMAP_dt = (data->adc[0] - prevMAP) / (data->time - prevTime);
-  prevMA
+  if(MAP_dip && dMAP_dt <= -20){
+    digitalWrite(MAP_IVO_PIN, HIGH);
+  }else{
+    digitalWrite(MAP_IVO_PIN, LOW);
+  }
   Manifold_Air_Array->push((double)(data->adc[0]));
   /*data->adc[1] = analogRead(CRANK_PIN);
   Crank_Pos_Array->push((double)(data->adc[1]));
  //grab all these values only at the start of a new cycle since they do not change quickly
  //and we only need these values at the beginning of each cycle*/
   if(newCycle){
+  newCycle = false;
   data->adc[2] = analogRead(TPS_PIN);
   Throttle_Pos_Array->push((double)(data->adc[2]));
   data->adc[3] = analogRead(FPS_PIN);
@@ -197,7 +203,7 @@ void datalog::acquireData(struct data_t* data){
   Intake_Air_Temp_Array->push((double)(data->adc[5]));
   data->adc[6] = analogRead(IAP_PIN);
   Intake_Air_Pressure_Array->push((double)(data->adc[6]));
-  newCycle = false;
+
   }
   
   
