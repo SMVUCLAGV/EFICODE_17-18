@@ -6,7 +6,7 @@
 
 
 
-datalog::datalog(bool wireless, DataArray* MAP, DataArray* CRANK, DataArray* TPS, DataArray* FPS, DataArray* ECT, DataArray* IAT, DataArray* IAP){
+datalog::datalog(bool wireless, DataArray* Timestamps, DataArray* MAP, DataArray* CRANK, DataArray* TPS, DataArray* FPS, DataArray* ECT, DataArray* IAT, DataArray* IAP){
       curBlock = 0;
       emptyTop = 0;
       minTop = 0;
@@ -18,6 +18,7 @@ datalog::datalog(bool wireless, DataArray* MAP, DataArray* CRANK, DataArray* TPS
       isSampling = false;
       justSampled = false;
       newCycle = true;
+      Timestamp_Array = Timestamps;
       Manifold_Air_Array = MAP;
       Crank_Pos_Array = CRANK;
       Throttle_Pos_Array = TPS;
@@ -84,7 +85,7 @@ void datalog::loopfunction() {
 		if (fileIsClosing){
 			file.close();
 			Serial.println("File complete.");
-			blinkForever();
+			//blinkForever();
 		} else {
 			yield(); // acquire data etc.
 		}
@@ -173,13 +174,13 @@ void datalog::acquireData(struct data_t* data){
   data->time = micros();
 
  //Grab these values as fast as possible
-  Timestamps->push(data->time);
+  Timestamp_Array->push(data->time);
   data->adc[0] = analogRead(MAP_PIN);
   Manifold_Air_Array->push((double)(data->adc[0]));
-  data->adc[1] = analogRead(CRANK_PIN);
+  /*data->adc[1] = analogRead(CRANK_PIN);
   Crank_Pos_Array->push((double)(data->adc[1]));
  //grab all these values only at the start of a new cycle since they do not change quickly
- //and we only need these values at the beginning of each cycle
+ //and we only need these values at the beginning of each cycle*/
   if(newCycle){
   data->adc[2] = analogRead(TPS_PIN);
   Throttle_Pos_Array->push((double)(data->adc[2]));

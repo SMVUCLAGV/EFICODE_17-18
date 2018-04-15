@@ -62,6 +62,7 @@ class datalog{
 		bool justSampled;
 		bool newCycle;
 
+    DataArray* Timestamp_Array;
     DataArray* Manifold_Air_Array;
     DataArray* Crank_Pos_Array;
     DataArray* Throttle_Pos_Array;

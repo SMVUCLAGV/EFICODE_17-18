@@ -1,24 +1,31 @@
+#include <SdFatConfig.h>
+#include <FreeStack.h>
+#include <MinimumSerial.h>
+#include <SdFat.h>
+#include <BlockDriver.h>
+#include <SysCall.h>
+
+#include <TimerThree.h>
+
 #include "DataArray.h"
 #include "AirMassEstimator.h"
+#include "FuelMassEstimator.h"
 #include "numericalIntegration.h"
 #include "datalog.h"
 #include "constants.h"
-#include "TimerThree.h"
 
-AirMassEstimator airmass;
+
 FuelMassEstimator fuelmass;
-DataArray Timestamps, MAP, CRANK, TPS, FPS, ECT, IAT, IAP, Reynolds;
-datalog log;
+DataArray *Timestamps, *MAP, *CRANK, *TPS, *FPS, *ECT, *IAT, *IAP, *Reynolds;
+datalog logger = datalog(false, Timestamps, MAP, CRANK, TPS, FPS, ECT, IAT, IAP);
+
+//The NULL and 1 parameters here still need to be filled
+AirMassEstimator airmass = AirMassEstimator(nullptr, nullptr, 1, 1, 1, 1, 1, 1, Timestamps, MAP, CRANK, Reynolds, TPS, IAP, IAT);
 
 bool firstCycle = true;
 
 void setup() {
-
-	log = datalog(false, &MAP, &CRANK, &TPS, &FPS, &ECT, &IAT, &IAP);
-	log.setup();
-
-	//The NULL and 1 parameters here still need to be filled
-	airmass = AirMassEstimator(NULL, NULL, 1, 1, 1, 1, 1, 1, Timestamps, &MAP, &CRANK, &Reynolds, &TPS, &IAP, &IAT);
+	logger.setup();
 
 	// Attach the interrupt for INJ pulse modulation.
 	// For some reason, the internal interrupt flags can end up defaulting
@@ -43,7 +50,7 @@ void setup() {
 
 	attachInterrupt(digitalPinToInterrupt(IVC_PIN), dummy, RISING);
 	detachInterrupt(digitalPinToInterrupt(IVC_PIN));
-	attachInterrupt(digitalPinToInterrupt(IVC_PIN), handle_IVC, RISING)
+	attachInterrupt(digitalPinToInterrupt(IVC_PIN), handle_IVC, RISING);
 
 }
 
@@ -54,13 +61,13 @@ void loop() {
 		digitalWrite(MAP_IVO_PIN, LOW);
 		firstCycle = false;
 	}
-	log.loopfunction();
+	logger.loopfunction();
 }
 
 //End Injection
 void handle_pulseTimerTimeout()
 {
-	digitalWrite(INJ_Pin, LOW);
+	digitalWrite(INJ_PIN, LOW);
 	Timer3.stop();
 }
 
@@ -68,17 +75,17 @@ void handle_pulseTimerTimeout()
 //TODO: RPM Calculation for logging
 void handle_IVO()
 {
-	digitalWrite(INJ_Pin, LOW); //Cut off injection when IVO
-	log.newcycle();
+	digitalWrite(INJ_PIN, LOW); //Cut off injection when IVO
+	logger.newcycle();
 }
 
 //On IVC, calculate how much fuel needs to be injected and tell the injector to inject for that period of time
 void handle_IVC()
 {
-	double airmass = airmass.estimateAirMass();
-	double fuelmass = fuelmass.estimateFuelMass(14.7, airmass);
+	double airMass = airmass.estimateAirMass();
+	double fuelMass = fuelmass.estimateFuelMass(14.7, airMass);
 	const double injectorFuelRate = 2.13333; //grams per second
-	double injectionTime = airmass / (injectorFuelRate * 1000000); //in microseconds
+	double injectionTime = fuelMass / (injectorFuelRate * 1000000); //in microseconds
 	inject(injectionTime);
 }
 
@@ -86,6 +93,8 @@ void handle_IVC()
 void inject(double injectionTime)
 {
 	Timer3.setPeriod(injectionTime);
-	digitalWrite(INJ_Pin, HIGH);
+	digitalWrite(INJ_PIN, HIGH);
 	Timer3.start();
 }
+
+void dummy() {}
