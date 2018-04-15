@@ -64,7 +64,7 @@ class datalog{
     double prevMAP;
     uint32_t prevTime;
     bool MAP_dip;
-    bool MAP_increase;
+    uint8_t MAP_dip_delay;
 
     DataArray* Manifold_Air_Array;
     DataArray* Crank_Pos_Array;

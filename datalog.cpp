@@ -28,7 +28,7 @@ datalog::datalog(bool wireless, DataArray* MAP, DataArray* CRANK, DataArray* TPS
       prevMAP = 0;
       prevTime = 0;
       MAP_dip = true;
-      MAP_increase = true;
+      MAP_dip_delay = 0;
       setup();
 }
 
@@ -181,12 +181,12 @@ void datalog::acquireData(struct data_t* data){
   data->adc[0] = analogRead(MAP_PIN);
   // Add interrupt to make A23 go high
   double dMAP_dt = (data->adc[0] - prevMAP) / (data->time - prevTime);
-  if(MAP_dip && dMAP_dt <= -20){
+  if((MAP_dip && dMAP_dt <= -20) || (MAP_dip_delay <= 5)){ //holds MAP_IVO_PIN high for 5 cycles
     digitalWrite(MAP_IVO_PIN, HIGH);
-  }else if(MAP_increase && dMAP_dt >= 20){
-    //digitalWrite(MAP_IVO_PIN, HIGH);
+    MAP_dip_delay++;
   }else{
     digitalWrite(MAP_IVO_PIN, LOW);
+    MAP_dip_delay = 0;
   }
   Manifold_Air_Array->push((double)(data->adc[0]));
   data->adc[1] = analogRead(CRANK_PIN);
