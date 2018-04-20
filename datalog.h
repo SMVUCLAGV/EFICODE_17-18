@@ -61,8 +61,11 @@ class datalog{
 		bool isSampling;
 		bool justSampled;
 		bool newCycle;
+    double prevMAP;
+    uint32_t prevTime;
+    bool MAP_dip;
+    uint8_t MAP_dip_delay;
 
-    DataArray* Timestamp_Array;
     DataArray* Manifold_Air_Array;
     DataArray* Crank_Pos_Array;
     DataArray* Throttle_Pos_Array;
